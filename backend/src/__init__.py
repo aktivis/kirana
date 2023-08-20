@@ -41,11 +41,12 @@ def create_app():
 app = create_app()
 
 
-# After request, add response headers
+# Add request  headers
 @app.after_request
 def after_request(response):
     response = make_response(response)
     response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "*"
     response.headers["Access-Control-Allow-Headers"] = "Content-Type"
     response.headers["Content-Type"] = "application/json"
     return response
