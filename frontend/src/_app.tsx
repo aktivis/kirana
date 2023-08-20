@@ -1,29 +1,41 @@
 import "@cloudscape-design/global-styles/index.css";
-import { AppLayout, BreadcrumbGroup } from "@cloudscape-design/components";
-import SideBar from "./views/components/SideBar";
-import ReactDOM from "react-dom";
-import CreatePage from "./views/pages/create";
-import { StrictMode } from "react";
+import {
+  AppLayout,
+  Flashbar,
+  FlashbarProps,
+} from "@cloudscape-design/components";
+import { createRoot } from "react-dom/client";
+import { StrictMode, useEffect, useState } from "react";
+import HomePage from "./views/pages";
+import { StateFlashbarContext } from "./utils/providers";
 
 export default function App() {
+  const [messages, setMessages] = useState<FlashbarProps.MessageDefinition[]>(
+    []
+  );
+
+  useEffect(() => {
+    if (messages.length) {
+      const timer = setTimeout(() => {
+        setMessages([]);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [messages]);
+
   return (
     <StrictMode>
-      <AppLayout
-        breadcrumbs={
-          <BreadcrumbGroup
-            items={[
-              { text: "Home", href: "/" },
-              { text: "Create Analysis", href: "/create" },
-            ]}
-          />
-        }
-        navigation={<SideBar />}
-        content={<CreatePage />}
-        toolsHide
-        navigationHide
-      />
+      <StateFlashbarContext.Provider value={setMessages}>
+        <AppLayout
+          stickyNotifications
+          notifications={<Flashbar items={messages} />}
+          content={<HomePage />}
+          toolsHide
+          navigationHide
+        />
+      </StateFlashbarContext.Provider>
     </StrictMode>
   );
 }
 
-ReactDOM.render(<App />, document.getElementById("root"));
+createRoot(document.getElementById("app")!).render(<App />);

@@ -13,16 +13,14 @@ research_bp = Blueprint("research", __name__)
 def read_researches():
     db = init_oltp()
     with db.session as session:
-        research_select = select(
-            Research.id, Research.name, Research.created_at, Research.updated_at
-        )
+        research_select = select(Research.id, Research.name, Research.description)
         research_result = session.execute(research_select).mappings().all()
         research_serialized = {"researches": [dict(row) for row in research_result]}
         return jsonify(research_serialized), StatusCode.OK
 
 
 # READ details of a research
-@research_bp.get("/<int:research_id>")
+@research_bp.get("/<int:research_id>/")
 def read_research(research_id):
     db = init_oltp()
     with db.session as session:
@@ -35,27 +33,29 @@ def read_research(research_id):
 # CREATE a research
 @research_bp.post("/")
 def create_research():
-    request_body = request.get_json()
-    name = request_body["name"]
+    values = request.get_json()
 
     db = init_oltp()
     with db.session as session:
-        research_insert = insert(Research).values(name=name)
-        session.execute(research_insert)
+        research_insert = (
+            insert(Research)
+            .values(values)
+            .returning(Research.id, Research.name, Research.description)
+        )
+        research_result = session.execute(research_insert).scalar()
         session.commit()
-        return "", StatusCode.CREATED
+        return jsonify(research_result), StatusCode.CREATED
 
 
 # UPDATE properties of a research
-@research_bp.put("/<int:research_id>")
+@research_bp.put("/<int:research_id>/")
 def update_research(research_id):
-    request_body = request.get_json()
-    name = request_body["name"]
+    values = request.get_json()
 
     db = init_oltp()
     with db.session as session:
         research_update = (
-            update(Research).where(Research.id == research_id).values(name=name)
+            update(Research).where(Research.id == research_id).values(values)
         )
         session.execute(research_update)
         session.commit()
@@ -63,7 +63,7 @@ def update_research(research_id):
 
 
 # DELETE a research
-@research_bp.delete("/<int:research_id>")
+@research_bp.delete("/<int:research_id>/")
 def delete_research(research_id):
     db = init_oltp()
     with db.session as session:

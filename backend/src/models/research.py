@@ -15,5 +15,6 @@ class Research:
     created_at: Mapped[CreatedAt]
     updated_at: Mapped[UpdatedAt]
     name: Mapped[str]
+    description: Mapped[str]
     literatures: Mapped[list["Literature"]] = relationship(init=False)
     quantitatives: Mapped[list["Quantitative"]] = relationship(init=False)
