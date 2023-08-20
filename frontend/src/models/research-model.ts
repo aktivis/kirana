@@ -1,21 +1,28 @@
-import { DSVRowArray } from "d3";
+import { LiteratureModel } from "./literature-model";
+import { QuantitativeModel } from "./quantitative-model";
 
-export type Observations = DSVRowArray<string>;
-
-export enum IndicatorType {
-  Text = "text",
-  Likert = "likert",
+export interface ResearchModel {
+  id: number | undefined;
+  created_at: string | undefined;
+  updated_at: string | undefined;
+  name: string;
+  description: string;
+  literatures: LiteratureModel[];
+  quantitatives: QuantitativeModel[];
 }
 
-export enum IndicatorRole {
-  Profile = "profile",
-  Measure = "measure",
-}
-
-export enum ConstructRelationship {
-  Direct = "Direct",
-  Mediation = "Mediation",
-  Moderation = "Moderation",
+export function createResearchModel(
+  initial: Partial<ResearchModel>
+): ResearchModel {
+  return {
+    id: initial.id ?? undefined,
+    created_at: initial.created_at ?? undefined,
+    updated_at: initial.updated_at ?? undefined,
+    name: initial.name ?? "",
+    description: initial.description ?? "",
+    literatures: [],
+    quantitatives: [],
+  };
 }
 
 export function copyResearchModel(
@@ -24,70 +31,11 @@ export function copyResearchModel(
 ): ResearchModel {
   return {
     id: initial.id,
-    filePath: overrides.filePath ?? initial.filePath,
-    indicators: overrides.indicators ?? [...initial.indicators],
-    constructs: overrides.constructs ?? [...initial.constructs],
-    relations: overrides.relations ?? [...initial.relations],
+    created_at: overrides.created_at ?? initial.created_at,
+    updated_at: overrides.updated_at ?? initial.updated_at,
+    name: overrides.name ?? initial.name,
+    description: overrides.description ?? initial.description,
+    literatures: overrides.literatures ?? [...initial.literatures],
+    quantitatives: overrides.quantitatives ?? [...initial.quantitatives],
   };
-}
-
-export function createResearchModel(): ResearchModel {
-  return {
-    id: undefined,
-    filePath: "",
-    indicators: [],
-    constructs: [],
-    relations: [],
-  };
-}
-
-export function createConstructModel(): ConstructModel {
-  return {
-    id: undefined,
-    name: "",
-    description: "",
-    indicators: [],
-  };
-}
-
-export function createRelationModel(): RelationModel {
-  return {
-    id: undefined,
-    influencer: undefined,
-    relationship: ConstructRelationship.Direct,
-    independent: null,
-    dependent: undefined,
-  };
-}
-
-export interface ResearchModel {
-  id: number | undefined;
-  filePath: string;
-  indicators: IndicatorModel[];
-  constructs: ConstructModel[];
-  relations: RelationModel[];
-}
-
-export interface IndicatorModel {
-  id: number | undefined;
-  order: number;
-  visibility: boolean;
-  name: string;
-  type: IndicatorType;
-  role: IndicatorRole;
-}
-
-export interface ConstructModel {
-  id: number | undefined;
-  name: string;
-  description: string;
-  indicators: IndicatorModel[];
-}
-
-export interface RelationModel {
-  id: number | undefined;
-  influencer: ConstructModel | undefined;
-  relationship: ConstructRelationship;
-  independent: ConstructModel | null;
-  dependent: ConstructModel | undefined;
 }
