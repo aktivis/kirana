@@ -17,6 +17,7 @@ import {
   createResearchModel,
 } from "../../models/research-model";
 import { ResearchDialogContext } from "../../utils/providers";
+import { useNavigate } from "react-router-dom";
 
 export default function HomePage() {
   const [showDialog, setShowDialog] = useState(false);
@@ -50,6 +51,7 @@ function HomeContent({
 }) {
   const { data, loading, error, refetch } = useGetResearches();
   const empty = "No research projects found, please start a new one.";
+  const navigate = useNavigate();
 
   return error ? (
     <Container>
@@ -99,7 +101,13 @@ function HomeContent({
           ],
           header: (item) => (
             <>
-              <Link href="#" fontSize="heading-m">
+              <Link
+                fontSize="heading-m"
+                onFollow={(event) => {
+                  event.preventDefault();
+                  navigate("/" + item?.id?.toString());
+                }}
+              >
                 {item?.name}
               </Link>
               <Box float="right">
