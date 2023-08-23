@@ -4,10 +4,11 @@ import { ResearchModel } from "../models/research-model";
 import useSWRMutation from "swr/mutation";
 
 const ALL_RESEARCHES = `${BASE_URL}/research`;
+const ONE_RESEARCH = `${BASE_URL}/research/:id`;
 
 export const useGetResearches = () => {
   const fetcher = async (key: string) => {
-    const url = `${key}/`;
+    const url = key + "/";
     const res = await fetch(url, { method: "GET" });
     if (!res.ok) throw new Error("Error while fetching research projects.");
     return (await res.json())["researches"] as Partial<ResearchModel[]>;
@@ -22,12 +23,29 @@ export const useGetResearches = () => {
   };
 };
 
+export const useGetResearch = (id: string) => {
+  const fetcher = async (key: string) => {
+    const url = key.replace(":id", id) + "/";
+    const res = await fetch(url, { method: "GET" });
+    if (!res.ok) throw new Error("Error while fetching the project.");
+    return (await res.json()) as ResearchModel;
+  };
+
+  const { data, isLoading, error, mutate } = useSWR(ONE_RESEARCH, fetcher);
+  return {
+    data: data,
+    loading: isLoading,
+    error: error,
+    refetch: mutate,
+  };
+};
+
 export const usePostResearch = () => {
   const fetcher = async (
     key: string,
     { arg }: { arg: Partial<ResearchModel> }
   ) => {
-    const url = `${key}/`;
+    const url = key + "/";
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -49,7 +67,7 @@ export const useUpdateResearch = (id: number) => {
     key: string,
     { arg }: { arg: Partial<ResearchModel> }
   ) => {
-    const url = `${key}/${id}/`;
+    const url = key + "/" + id.toString() + "/";
     const res = await fetch(url, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -68,7 +86,7 @@ export const useUpdateResearch = (id: number) => {
 
 export const useDeleteResearch = (id: number) => {
   const fetcher = async (key: string) => {
-    const url = `${key}/${id}/`;
+    const url = key + "/" + id.toString() + "/";
     const res = await fetch(url, { method: "DELETE" });
     if (!res.ok) throw new Error("Error while deleting the project.");
     return res.text();
