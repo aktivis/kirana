@@ -1,28 +1,31 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { AttributeEditor, Select } from "@cloudscape-design/components";
 import {
+  RelationType,
   RelationModel,
-  ResearchModel,
-  ConstructRelationship,
-  copyResearchModel,
+  QuantitativeModel,
   createRelationModel,
-} from "../../models/research-model";
-import { handleRelation } from "../../controllers/research-controller";
-import { formID } from "../../utils/names";
+  copyQuantitativeModel,
+} from "../../../models/quantitative-model";
+import { handleRelation } from "../../../controllers/quantitative-controller";
 
-export default ({
-  research,
-  setResearch,
+export default function RelationEditor({
+  quantitative,
+  setQuantitative,
 }: {
-  research: ResearchModel;
-  setResearch: Dispatch<SetStateAction<ResearchModel>>;
-}) => {
-  const relationshipOptions = Object.values(ConstructRelationship).map((e) => ({
+  quantitative: QuantitativeModel;
+  setQuantitative: Dispatch<SetStateAction<QuantitativeModel>>;
+}) {
+  const relationshipOptions = Object.values(RelationType).map((e) => ({
     value: e,
   }));
 
   const constructSimilarity = (item: RelationModel) => {
-    const array = [item.influencer, item.independent, item.dependent];
+    const array = [
+      item.influencer_construct,
+      item.independent_construct,
+      item.dependent_construct,
+    ];
     if (array.some((e) => e === undefined)) {
       return;
     }
@@ -33,12 +36,16 @@ export default ({
   };
 
   const [relations, setRelations] = useState(
-    research.relations.length ? research.relations : [createRelationModel()]
+    quantitative.relations.length
+      ? quantitative.relations
+      : [createRelationModel()]
   );
 
   useEffect(() => {
-    setResearch(copyResearchModel(research, { relations: relations }));
-  }, [relations]);
+    setQuantitative((quantitative) =>
+      copyQuantitativeModel(quantitative, { relations: relations })
+    );
+  }, [relations, setQuantitative]);
 
   return (
     <>
@@ -47,7 +54,7 @@ export default ({
           setRelations([...relations, createRelationModel()]);
         }}
         onRemoveButtonClick={({ detail: { itemIndex } }) => {
-          const newRelations = relations.filter((e, i) => {
+          const newRelations = relations.filter((_, i) => {
             return i !== itemIndex;
           });
           setRelations(newRelations);
@@ -60,23 +67,23 @@ export default ({
         items={relations}
         definition={[
           {
-            label: formID.influencer,
+            label: "Influencer",
             errorText: (item) => constructSimilarity(item),
             control: (item, index) => (
               <Select
                 placeholder="Choose influencing variable"
                 selectedOption={{
-                  label: item.influencer?.name,
-                  value: item.influencer?.name,
+                  label: item.influencer_construct?.name,
+                  value: item.influencer_construct?.name,
                 }}
-                options={research.constructs.map((e) => ({
+                options={quantitative.constructs.map((e) => ({
                   label: e.name,
                   value: e.name,
                 }))}
                 onChange={({ detail }) => {
                   handleRelation(
-                    formID.influencer,
-                    research,
+                    "influencer_construct",
+                    quantitative,
                     detail,
                     index,
                     relations,
@@ -87,13 +94,13 @@ export default ({
             ),
           },
           {
-            label: formID.relationship,
+            label: "Relationship",
             control: (item, index) => (
               <Select
                 placeholder="Choose relationship"
                 selectedOption={{
-                  label: item.relationship,
-                  value: item.relationship,
+                  label: item.type,
+                  value: item.type,
                 }}
                 options={relationshipOptions.map((e) => ({
                   label: e.value,
@@ -101,8 +108,8 @@ export default ({
                 }))}
                 onChange={({ detail }) => {
                   handleRelation(
-                    formID.relationship,
-                    research,
+                    "type",
+                    quantitative,
                     detail,
                     index,
                     relations,
@@ -113,26 +120,26 @@ export default ({
             ),
           },
           {
-            label: formID.independent,
+            label: "Independent",
             errorText: (item) => constructSimilarity(item),
             control: (item, index) => (
               <Select
-                disabled={item.relationship === ConstructRelationship.Direct}
+                disabled={item.type === RelationType.DIRECT}
                 placeholder="Choose independent variable"
                 selectedOption={{
-                  label: item.independent?.name,
-                  value: item.independent?.name,
+                  label: item.independent_construct?.name,
+                  value: item.independent_construct?.name,
                 }}
-                options={research.constructs
+                options={quantitative.constructs
                   .map((e) => ({
                     label: e.name,
                     value: e.name,
                   }))
-                  .filter((e) => e.value !== item.influencer?.name)}
+                  .filter((e) => e.value !== item.influencer_construct?.name)}
                 onChange={({ detail }) => {
                   handleRelation(
-                    formID.independent,
-                    research,
+                    "independent_construct",
+                    quantitative,
                     detail,
                     index,
                     relations,
@@ -143,25 +150,25 @@ export default ({
             ),
           },
           {
-            label: formID.dependent,
+            label: "Dependent",
             errorText: (item) => constructSimilarity(item),
             control: (item, index) => (
               <Select
                 placeholder="Choose dependent variable"
                 selectedOption={{
-                  label: item.dependent?.name,
-                  value: item.dependent?.name,
+                  label: item.dependent_construct?.name,
+                  value: item.dependent_construct?.name,
                 }}
-                options={research.constructs
+                options={quantitative.constructs
                   .map((e) => ({
                     label: e.name,
                     value: e.name,
                   }))
-                  .filter((e) => e.value !== item.influencer?.name)}
+                  .filter((e) => e.value !== item.influencer_construct?.name)}
                 onChange={({ detail }) => {
                   handleRelation(
-                    formID.dependent,
-                    research,
+                    "dependent_construct",
+                    quantitative,
                     detail,
                     index,
                     relations,
@@ -175,4 +182,4 @@ export default ({
       />
     </>
   );
-};
+}

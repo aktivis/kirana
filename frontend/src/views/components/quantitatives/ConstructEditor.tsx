@@ -5,25 +5,29 @@ import {
   Multiselect,
 } from "@cloudscape-design/components";
 import {
-  ResearchModel,
-  copyResearchModel,
+  QuantitativeModel,
+  copyQuantitativeModel,
   createConstructModel,
-} from "../../models/research-model";
+} from "../../../models/quantitative-model";
 
-export default ({
-  research,
-  setResearch,
+export default function ConstructEditor({
+  quantitative,
+  setQuantitative,
 }: {
-  research: ResearchModel;
-  setResearch: Dispatch<SetStateAction<ResearchModel>>;
-}) => {
+  quantitative: QuantitativeModel;
+  setQuantitative: Dispatch<SetStateAction<QuantitativeModel>>;
+}) {
   const [constructs, setConstructs] = useState(
-    research.constructs.length ? research.constructs : [createConstructModel()]
+    quantitative.constructs.length
+      ? quantitative.constructs
+      : [createConstructModel()]
   );
 
   useEffect(() => {
-    setResearch(copyResearchModel(research, { constructs: constructs }));
-  }, [constructs]);
+    setQuantitative((quantitative) =>
+      copyQuantitativeModel(quantitative, { constructs: constructs })
+    );
+  }, [constructs, setQuantitative]);
 
   return (
     <>
@@ -32,7 +36,7 @@ export default ({
           setConstructs([...constructs, createConstructModel()]);
         }}
         onRemoveButtonClick={({ detail: { itemIndex } }) => {
-          const newConstructs = constructs.filter((e, i) => {
+          const newConstructs = constructs.filter((_, i) => {
             return i !== itemIndex;
           });
           setConstructs(newConstructs);
@@ -83,20 +87,20 @@ export default ({
                 placeholder="Choose indicators"
                 tokenLimit={0}
                 selectedOptions={item.indicators.map((e) => ({
-                  label: e.name,
-                  value: e.name,
+                  label: e.alias,
+                  value: e.alias,
                 }))}
-                options={research.indicators
+                options={quantitative.indicators
                   .filter((e) => e.visibility)
                   .map((e) => ({
-                    label: e.name,
-                    value: e.name,
+                    label: e.alias,
+                    value: e.alias,
                   }))}
                 onChange={({ detail }) => {
                   const newIndicators = detail.selectedOptions.flatMap(
                     (option) =>
-                      research.indicators.filter(
-                        (element) => element.name === option.value
+                      quantitative.indicators.filter(
+                        (element) => element.alias === option.value
                       )
                   );
                   const newConstructs = constructs.map((e, i) => ({
@@ -112,4 +116,4 @@ export default ({
       />
     </>
   );
-};
+}

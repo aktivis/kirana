@@ -1,20 +1,23 @@
 import * as React from "react";
 import { SideNavigation } from "@cloudscape-design/components";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useGetQuantitatives } from "../../../services/quantitatives/quantitative-service";
 
 export default function Sidebar() {
-  const [activeHref, setActiveHref] = React.useState("/:id");
+  const { data } = useGetQuantitatives();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [activeHref, setActiveHref] = React.useState(location.pathname);
 
   return (
     <SideNavigation
       activeHref={activeHref}
       onFollow={(event) => {
-        if (!event.detail.external) {
-          event.preventDefault();
-          setActiveHref(event.detail.href);
-          navigate(event.detail.href);
-        }
+        event.preventDefault();
+        setActiveHref(event.detail.href);
+        navigate(
+          event.detail.href.replace(":id", location.pathname.split("/")[1])
+        );
       }}
       header={{ href: "/", text: "Kirana Desktop" }}
       items={[
@@ -23,17 +26,17 @@ export default function Sidebar() {
         {
           type: "link-group",
           text: "Theoritical Foundations",
-          href: "/:id/theory/create/",
+          href: "/:id/theory",
           items: [
             {
               type: "link",
               text: "References",
-              href: "/:id/reference?page=index/",
+              href: "/:id/theory/reference?page=index",
             },
             {
               type: "link",
               text: "Bibliography",
-              href: "/:id/bibliography/",
+              href: "/:id/theory/bibliography",
             },
           ],
         },
@@ -41,14 +44,12 @@ export default function Sidebar() {
         {
           type: "link-group",
           text: "Quantitative Analyses",
-          href: "/:id/quantitative/create/",
-          items: [
-            {
-              type: "link",
-              text: "Quantitative Name",
-              href: "/:id/quantitative/:quantitative-name",
-            },
-          ],
+          href: "/:id/quantitative",
+          items: data?.map((e) => ({
+            type: "link",
+            text: e?.name ?? "",
+            href: `/:id/quantitative/${e?.id}`,
+          })),
         },
       ]}
     />

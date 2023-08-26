@@ -4,9 +4,15 @@ from sqlalchemy import ForeignKey, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..databases.transactional import CreatedAt, UpdatedAt, reg, PrimaryID
 
-ResearchID = Annotated[int, mapped_column(ForeignKey("researches.id"))]
-ConstructID = Annotated[int, mapped_column(ForeignKey("constructs.id"))]
-QuantitativeID = Annotated[int, mapped_column(ForeignKey("quantitatives.id"))]
+ResearchID = Annotated[
+    int, mapped_column(ForeignKey("researches.id", ondelete="CASCADE"))
+]
+ConstructID = Annotated[
+    int, mapped_column(ForeignKey("constructs.id", ondelete="SET NULL"))
+]
+QuantitativeID = Annotated[
+    int, mapped_column(ForeignKey("quantitatives.id", ondelete="CASCADE"))
+]
 
 
 def get_observation_code(context):
@@ -102,7 +108,19 @@ class Quantitative:
     observation_code: Mapped[str] = mapped_column(
         insert_default=get_observation_code, onupdate=get_observation_code
     )
-    indicators: Mapped[list["Indicator"]] = relationship(init=False)
-    constructs: Mapped[list["Construct"]] = relationship(init=False)
-    relations: Mapped[list["Relation"]] = relationship(init=False)
-    analyses: Mapped[list["Analysis"]] = relationship(init=False)
+    indicators: Mapped[list["Indicator"]] = relationship(
+        init=False,
+        passive_deletes=True,
+    )
+    constructs: Mapped[list["Construct"]] = relationship(
+        init=False,
+        passive_deletes=True,
+    )
+    relations: Mapped[list["Relation"]] = relationship(
+        init=False,
+        passive_deletes=True,
+    )
+    analyses: Mapped[list["Analysis"]] = relationship(
+        init=False,
+        passive_deletes=True,
+    )

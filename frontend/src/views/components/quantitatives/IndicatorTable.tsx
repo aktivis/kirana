@@ -6,38 +6,45 @@ import {
   CollectionPreferences,
 } from "@cloudscape-design/components";
 import {
-  ResearchModel,
+  QuantitativeModel,
   IndicatorRole,
   IndicatorType,
-} from "../../models/research-model";
+} from "../../../models/quantitative-model";
 import { Dispatch, SetStateAction } from "react";
-import { tableID } from "../../utils/names";
 import {
   handleIndicatorPreferences,
   handleIndicatorProps,
-} from "../../controllers/research-controller";
+} from "../../../controllers/quantitative-controller";
 
-export default ({
-  research,
-  setResearch,
+export default function IndicatorTable({
+  quantitative,
+  setQuantitative,
 }: {
-  research: ResearchModel;
-  setResearch: Dispatch<SetStateAction<ResearchModel>>;
-}) => {
+  quantitative: QuantitativeModel;
+  setQuantitative: Dispatch<SetStateAction<QuantitativeModel>>;
+}) {
   const typeOptions = Object.values(IndicatorType).map((e) => ({ value: e }));
   const roleOptions = Object.values(IndicatorRole).map((e) => ({ value: e }));
 
   return (
     <>
       <Table
-        items={research.indicators.filter((e) => e.visibility)}
+        items={quantitative.indicators
+          .filter((e) => e.visibility)
+          .sort((a, b) => a.order - b.order)}
         sortingDisabled
         stripedRows
         stickyHeader
         loadingText="Loading resources"
-        variant="container"
+        variant="borderless"
         submitEdit={(item, column, newValue) => {
-          handleIndicatorProps(item, column, newValue, research, setResearch);
+          handleIndicatorProps(
+            item,
+            column,
+            newValue,
+            quantitative,
+            setQuantitative
+          );
         }}
         empty={
           <Box padding={{ bottom: "s" }} variant="p" color="inherit">
@@ -51,40 +58,48 @@ export default ({
               confirmLabel="Confirm"
               cancelLabel="Cancel"
               preferences={{
-                contentDisplay: research.indicators.map((e) => ({
-                  id: (e.id ?? e.order).toString(),
-                  visible: e.visibility,
-                })),
+                contentDisplay: quantitative.indicators
+                  .sort((a, b) => a.order - b.order)
+                  .map((e) => ({
+                    id: (e.id ?? e.order).toString(),
+                    visible: e.visibility,
+                  })),
               }}
               contentDisplayPreference={{
                 title: "Order & Visibility",
                 description:
                   "Reorder column with the icon and/or change visibility with the switch.",
-                options: research.indicators.map((e) => ({
-                  id: (e.id ?? e.order).toString(),
-                  label: e.name,
-                })),
+                options: quantitative.indicators
+                  .sort((a, b) => a.order - b.order)
+                  .map((e) => ({
+                    id: (e.id ?? e.order).toString(),
+                    label: e.alias,
+                  })),
               }}
               onConfirm={({ detail }) =>
-                handleIndicatorPreferences(detail, research, setResearch)
+                handleIndicatorPreferences(
+                  detail,
+                  quantitative,
+                  setQuantitative
+                )
               }
             />
           </Box>
         }
         columnDefinitions={[
           {
-            id: tableID.name.toLowerCase(),
-            header: tableID.name,
+            id: "alias",
+            header: "Name",
             width: 200,
             cell: (item) => {
-              return item.name;
+              return item.alias;
             },
             editConfig: {
               editingCell: (item, { currentValue, setValue }) => {
                 return (
                   <Input
                     autoFocus={true}
-                    value={currentValue ?? item.name}
+                    value={currentValue ?? item.alias}
                     onChange={(e) => setValue(e.detail.value)}
                   />
                 );
@@ -92,8 +107,8 @@ export default ({
             },
           },
           {
-            id: tableID.type.toLowerCase(),
-            header: tableID.type,
+            id: "type",
+            header: "Type",
             width: 200,
             cell: (item) => {
               return item.type;
@@ -118,8 +133,8 @@ export default ({
             },
           },
           {
-            id: tableID.role.toLowerCase(),
-            header: tableID.role,
+            id: "role",
+            header: "Role",
             width: 200,
             cell: (item) => {
               return item.role;
@@ -147,4 +162,4 @@ export default ({
       />
     </>
   );
-};
+}

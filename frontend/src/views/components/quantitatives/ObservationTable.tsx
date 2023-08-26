@@ -1,24 +1,26 @@
 import { Table, Pagination, FileUpload } from "@cloudscape-design/components";
 import { Dispatch, SetStateAction, useState } from "react";
-import { Observations, ResearchModel } from "../../models/research-model";
-import { handleCSV } from "../../controllers/research-controller";
+import {
+  Observations,
+  QuantitativeModel,
+} from "../../../models/quantitative-model";
+import { handleCSV } from "../../../controllers/quantitative-controller";
 import { DSVRowString } from "d3";
-import { paginate } from "../../utils/pagination";
+import { paginate } from "../../../utils/pagination";
 
-export default ({
+export default function ObservationTable({
   observations,
   setObservations,
-  research,
-  setResearch,
+  quantitative,
+  setQuantitative,
 }: {
   observations: Observations | undefined;
   setObservations: Dispatch<SetStateAction<Observations | undefined>>;
-  research: ResearchModel;
-  setResearch: Dispatch<SetStateAction<ResearchModel>>;
-}) => {
+  quantitative: QuantitativeModel;
+  setQuantitative: Dispatch<SetStateAction<QuantitativeModel>>;
+}) {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
-
   const { items, totalPages } = paginate(observations, page, 10);
 
   const handleObservations = (observations: Observations | undefined) => {
@@ -57,7 +59,7 @@ export default ({
             accept=".csv"
             onChange={({ detail }) => {
               setLoading(true);
-              handleCSV(detail.value[0], research, setResearch)
+              handleCSV(detail.value[0], quantitative, setQuantitative)
                 .then((value) => setObservations(value))
                 .then(() => setLoading(false));
             }}
@@ -82,4 +84,4 @@ export default ({
       />
     </>
   );
-};
+}

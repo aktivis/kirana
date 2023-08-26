@@ -18,7 +18,7 @@ import {
   useDeleteResearch,
   usePostResearch,
   useUpdateResearch,
-} from "../../../services/research-service";
+} from "../../../services/researches/research-service";
 import {
   ResearchDialogContext,
   StateFlashbarContext,

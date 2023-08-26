@@ -1,6 +1,6 @@
 import useSWR from "swr";
-import { BASE_URL } from "../utils/api";
-import { ResearchModel } from "../models/research-model";
+import { BASE_URL } from "../../utils/api";
+import { ResearchModel } from "../../models/research-model";
 import useSWRMutation from "swr/mutation";
 
 const ALL_RESEARCHES = `${BASE_URL}/research`;
