@@ -1,6 +1,8 @@
 from os import getenv
 from dotenv import load_dotenv
 from flask import Flask, make_response
+from sqlalchemy import Engine, event
+from sqlite3 import Connection as SQLiteConnection
 from waitress import serve
 
 from .routes.literature import literature_bp
@@ -28,7 +30,12 @@ def create_app():
     # Initialize transactional database
     with flask.app_context():
         db = init_oltp()
-        reg.metadata.create_all(db.engine)
+
+        with db.engine.connect() as connection:
+            cursor = connection.connection.cursor()
+            cursor.execute("PRAGMA foreign_keys=ON")
+            reg.metadata.create_all(db.engine)
+            cursor.close()
 
     # Register routes
     flask.register_blueprint(research_bp, url_prefix="/research")
@@ -39,6 +46,14 @@ def create_app():
 
 
 app = create_app()
+
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    if isinstance(dbapi_connection, SQLiteConnection):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON;")
+        cursor.close()
 
 
 # Add request  headers
