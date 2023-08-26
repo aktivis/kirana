@@ -1,10 +1,18 @@
 from flask import Blueprint, jsonify, request
+import polars as pl
 from sqlalchemy import delete, insert, select, update
 
 from ..utils.status_code import StatusCode
 from ..databases.transactional import init_oltp
 from ..databases.analytical import init_olap
-from ..models.quantitative import Analysis, Construct, Indicator, Quantitative, Relation
+from ..models.quantitative import (
+    Observation,
+    Indicator,
+    Construct,
+    Relation,
+    Analysis,
+    Quantitative,
+)
 
 quantitative_bp = Blueprint("quantitative", __name__)
 
@@ -119,7 +127,7 @@ def create_quantitative():
         session.execute(relation_insert)
 
         session.commit()
-        return "", StatusCode.NO_CONTENT
+        return "", StatusCode.CREATED
 
 
 # UPDATE properties of a quantitative
@@ -150,26 +158,45 @@ def delete_quantitative(quantitative_id):
 
 # READ a paginated observation
 @quantitative_bp.get("/<int:quantitative_id>/observation")
-def read_observation():
-    # [TODO] to be implemented after frontend is ready
-    # pagination = request.args.get("page")
-    with init_olap() as connection:
-        data = connection.sql("SELECT * FROM observation;")
-        print(data)
-        return {"message": "OK"}, 200
+def read_observation(quantitative_id):
+    page = request.args.get("page", default=1, type=int)
+
+    db = init_oltp()
+    with db.session as session:
+        quantitative_select = select(Quantitative.observation_code)
+        quantitative_filter = quantitative_select.where(
+            Quantitative.id == quantitative_id
+        )
+        observation_code = session.execute(quantitative_filter).scalar()
+
+        with init_olap() as connection:
+            count = connection.table(observation_code).count("*").fetchone()
+            df = connection.table(observation_code).limit(page * 5, (page - 1) * 5).pl()
+            response = Observation(
+                length=count[0],
+                columns=df.columns,
+                data=df.to_dicts(),
+            )
+            return jsonify(response), StatusCode.OK
 
 
 # UPSERT properties of an observation
-@quantitative_bp.patch("/<int:quantitative_id>/observation")
-def create_observation():
-    # [TODO] to be implemented after frontend is ready
-    with init_olap() as connection:
-        csv_path = "static/observation.csv.gz"
-        connection.sql(
-            f"""CREATE OR REPLACE TABLE observation AS SELECT * 
-            FROM read_csv_auto('{csv_path}');"""
+@quantitative_bp.patch("/<int:quantitative_id>/observation/")
+def create_observation(quantitative_id):
+    csv_file = request.files.get("csv")
+
+    db = init_oltp()
+    with db.session as session:
+        quantitative_select = select(Quantitative.observation_code)
+        quantitative_filter = quantitative_select.where(
+            Quantitative.id == quantitative_id
         )
-        return {"message": "OK"}, 201
+        observation_code = session.execute(quantitative_filter).scalar()
+        data = pl.read_csv(csv_file).to_arrow()
+
+        with init_olap() as connection:
+            connection.from_arrow(data).create(observation_code)
+            return "", StatusCode.CREATED
 
 
 # RUN an analysis
