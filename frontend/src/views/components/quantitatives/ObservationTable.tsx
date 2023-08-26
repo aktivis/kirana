@@ -1,35 +1,39 @@
 import { Table, Pagination, FileUpload } from "@cloudscape-design/components";
 import { Dispatch, SetStateAction, useState } from "react";
 import {
-  Observations,
+  ObservationDatum,
+  ObservationModel,
   QuantitativeModel,
 } from "../../../models/quantitative-model";
 import { handleCSV } from "../../../controllers/quantitative-controller";
-import { DSVRowString } from "d3";
-import { paginate } from "../../../utils/pagination";
 
 export default function ObservationTable({
+  observationPage,
+  setObservationPage,
+  setFile,
   observations,
   setObservations,
   quantitative,
   setQuantitative,
 }: {
-  observations: Observations | undefined;
-  setObservations: Dispatch<SetStateAction<Observations | undefined>>;
+  observationPage: number;
+  setObservationPage: Dispatch<SetStateAction<number>>;
+  setFile?: Dispatch<SetStateAction<File | undefined>>;
+  observations: ObservationModel | undefined;
+  setObservations: Dispatch<SetStateAction<ObservationModel | undefined>>;
   quantitative: QuantitativeModel;
   setQuantitative: Dispatch<SetStateAction<QuantitativeModel>>;
 }) {
-  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const { items, totalPages } = paginate(observations, page, 10);
 
-  const handleObservations = (observations: Observations | undefined) => {
+  const handleObservations = (observations: ObservationModel | undefined) => {
     if (observations === undefined) return [];
 
     const { columns } = observations;
+
     return columns.map((e) => ({
       header: e,
-      cell: (item: DSVRowString) => item[e],
+      cell: (item: ObservationDatum) => item[e],
       width: 200,
     }));
   };
@@ -38,7 +42,7 @@ export default function ObservationTable({
     <>
       <Table
         columnDefinitions={handleObservations(observations)}
-        items={items}
+        items={observations?.data ?? []}
         sortingDisabled
         stripedRows
         stickyHeader
@@ -46,9 +50,11 @@ export default function ObservationTable({
         pagination={
           observations ? (
             <Pagination
-              currentPageIndex={page}
-              pagesCount={totalPages}
-              onChange={({ detail }) => setPage(detail.currentPageIndex)}
+              currentPageIndex={observationPage}
+              pagesCount={observations?.length / 5}
+              onChange={({ detail }) => {
+                setObservationPage(detail.currentPageIndex);
+              }}
             />
           ) : null
         }
@@ -59,8 +65,17 @@ export default function ObservationTable({
             accept=".csv"
             onChange={({ detail }) => {
               setLoading(true);
+
+              if (setFile) setFile(detail.value[0]);
+
               handleCSV(detail.value[0], quantitative, setQuantitative)
-                .then((value) => setObservations(value))
+                .then((value) => {
+                  setObservations({
+                    length: value!.length,
+                    columns: value!.columns,
+                    data: value!,
+                  });
+                })
                 .then(() => setLoading(false));
             }}
             value={[]}

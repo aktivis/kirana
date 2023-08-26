@@ -5,18 +5,22 @@ import IndicatorTable from "../../components/quantitatives/IndicatorTable";
 import ConstructEditor from "../../components/quantitatives/ConstructEditor";
 import RelationEditor from "../../components/quantitatives/RelationEditor";
 import {
-  Observations,
+  ObservationModel,
   createQuantitativeModel,
 } from "../../../models/quantitative-model";
 import { useParams } from "react-router-dom";
 import NameForm from "../../components/quantitatives/NameForm";
 import { usePostQuantitative } from "../../../services/quantitatives/quantitative-service";
+import { useUpsertObservation } from "../../../services/quantitatives/observation-service";
 
 export default function QuantitativeCreatePage() {
   const { id } = useParams();
-  const { postTrigger } = usePostQuantitative();
+  const { postTrigger: postQuantitative } = usePostQuantitative();
+  const { postTrigger: postObservations } = useUpsertObservation(id!);
+  const [file, setFile] = useState<File>();
   const [quantitative, setQuantitative] = useState(createQuantitativeModel({}));
-  const [observations, setObservations] = useState<Observations>();
+  const [observations, setObservations] = useState<ObservationModel>();
+  const [observationPage, setObservationPage] = useState(1);
 
   return (
     <>
@@ -30,13 +34,14 @@ export default function QuantitativeCreatePage() {
           previousButton: "Previous",
         }}
         onSubmit={() => {
-          postTrigger({
+          postQuantitative({
             research_id: Number.parseInt(id!),
             name: quantitative.name,
             indicators: quantitative.indicators,
             constructs: quantitative.constructs,
             relations: quantitative.relations,
           });
+          postObservations(file!);
         }}
         steps={[
           {
@@ -53,6 +58,9 @@ export default function QuantitativeCreatePage() {
             title: "Select Observation",
             content: (
               <ObservationTable
+                observationPage={observationPage}
+                setObservationPage={setObservationPage}
+                setFile={setFile}
                 observations={observations}
                 setObservations={setObservations}
                 quantitative={quantitative}

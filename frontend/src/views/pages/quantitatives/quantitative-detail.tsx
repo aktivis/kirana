@@ -8,7 +8,7 @@ import {
 } from "@cloudscape-design/components";
 import { useEffect, useRef, useState } from "react";
 import {
-  Observations,
+  ObservationModel,
   QuantitativeModel,
 } from "../../../models/quantitative-model";
 import ConstructEditor from "../../components/quantitatives/ConstructEditor";
@@ -39,6 +39,7 @@ import {
 } from "../../../services/quantitatives/relation-service";
 import { useUpdateIndicators } from "../../../services/quantitatives/indicator-service";
 import { checkIndicatorsSimilarity } from "../../../controllers/indicator-controller";
+import { useGetObservation } from "../../../services/quantitatives/observation-service";
 
 export default function QuantitativeDetailPage() {
   const { quanID } = useParams();
@@ -106,8 +107,13 @@ function QuantitativeDetailContent({
   quantitativeID: string;
 }) {
   const [tab, setTab] = useState("analyses");
+  const [observationPage, setObservationPage] = useState(1);
   const [quantitative, setQuantitative] = useState(data);
-  const [observations, setObservations] = useState<Observations>();
+  const { data: obs, loading } = useGetObservation(
+    quantitativeID,
+    observationPage.toString()
+  );
+  const [observations, setObservations] = useState<ObservationModel>();
   const oldIndicators = useRef(quantitative.indicators).current;
   const oldConstructs = useRef(quantitative.constructs).current;
   const oldRelations = useRef(quantitative.relations).current;
@@ -124,6 +130,12 @@ function QuantitativeDetailContent({
   const { deleteTrigger: deleteRelations } = useDeleteRelations(quantitativeID);
   const { postTrigger: postRelations } = usePostRelations(quantitativeID);
   const { updateTrigger: updateRelations } = useUpdateRelations(quantitativeID);
+
+  useEffect(() => {
+    if (!loading) {
+      setObservations(obs);
+    }
+  }, [loading, obs]);
 
   useEffect(() => {
     checkIndicatorsSimilarity(
@@ -152,6 +164,8 @@ function QuantitativeDetailContent({
   return (
     <>
       <ObservationTable
+        observationPage={observationPage}
+        setObservationPage={setObservationPage}
         observations={observations}
         setObservations={setObservations}
         quantitative={quantitative}
