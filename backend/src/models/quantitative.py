@@ -1,5 +1,6 @@
+from dataclasses import dataclass
 from enum import Enum
-from typing import Annotated, Optional
+from typing import Annotated, Any, Optional
 from sqlalchemy import ForeignKey, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..databases.transactional import CreatedAt, UpdatedAt, reg, PrimaryID
@@ -41,6 +42,13 @@ class RelationType(str, Enum):
 
 class AnalysisType(str, Enum):
     DESCRIPTIVE = "descriptive statistics"
+
+
+@dataclass
+class Observation:
+    length: int
+    columns: list[str]
+    data: list[dict[str, Any]]
 
 
 @reg.mapped_as_dataclass

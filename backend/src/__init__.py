@@ -63,7 +63,7 @@ def after_request(response):
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Methods"] = "*"
     response.headers["Access-Control-Allow-Headers"] = "Content-Type"
-    response.headers["Content-Type"] = "application/json"
+    response.headers["Content-Type"] = "application/json, multipart/form-data"
     return response
 
 

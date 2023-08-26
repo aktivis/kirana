@@ -1,6 +1,6 @@
-import { DSVRowArray } from "d3";
-
-export type Observations = DSVRowArray<string>;
+export type ObservationDatum = {
+  [key: string]: undefined | number | string | boolean;
+};
 
 export enum IndicatorType {
   TEXT = "text",
@@ -20,6 +20,12 @@ export enum RelationType {
 
 export enum AnalysisType {
   DESCRIPTIVE = "descriptive statistics",
+}
+
+export interface ObservationModel {
+  length: number;
+  columns: string[];
+  data: ObservationDatum[];
 }
 
 export interface IndicatorModel {
