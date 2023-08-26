@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useState } from "react";
-import { useGetResearches } from "../../services/research-service";
+import { useGetResearches } from "../../services/researches/research-service";
 import {
   Box,
   Button,
@@ -11,7 +11,7 @@ import {
   Link,
   StatusIndicator,
 } from "@cloudscape-design/components";
-import { ResearchDialog } from "../components/research/ResearchDialog";
+import { ResearchDialog } from "../components/researches/ResearchDialog";
 import {
   ResearchModel,
   createResearchModel,

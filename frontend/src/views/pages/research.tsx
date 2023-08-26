@@ -3,7 +3,7 @@ import {
   Header,
   TextContent,
 } from "@cloudscape-design/components";
-import { useGetResearch } from "../../services/research-service";
+import { useGetResearch } from "../../services/researches/research-service";
 import { useParams } from "react-router-dom";
 
 export default function ResearchPage() {
