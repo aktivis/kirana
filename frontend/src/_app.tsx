@@ -16,14 +16,27 @@ import {
 } from "react-router-dom";
 import HomePage from "./views/pages/index";
 import ResearchPage from "./views/pages/research";
+import QuantitativeCreatePage from "./views/pages/quantitatives/quantitative-create";
+import QuantitativeDetailPage from "./views/pages/quantitatives/quantitative-detail";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     children: [
-      { index: true, element: <HomePage /> },
+      { index: true, element: <HomePage /> }, // to be changed into HomePage
       { path: ":id", element: <ResearchPage /> },
+      { path: ":id/quantitative", element: <QuantitativeCreatePage /> },
+      {
+        path: ":id/quantitative/:quanID",
+        element: <QuantitativeDetailPage />,
+      },
+      { path: "/:id/theory", element: <div>Coming soon.</div> },
+      {
+        path: "/:id/theory/reference",
+        element: <div>Coming soon.</div>,
+      },
+      { path: "/:id/theory/bibliography", element: <div>Coming soon.</div> },
     ],
   },
 ]);
