@@ -31,11 +31,11 @@ export function copyResearchModel(
 ): ResearchModel {
   return {
     id: initial.id,
-    created_at: overrides.created_at ?? initial.created_at,
-    updated_at: overrides.updated_at ?? initial.updated_at,
+    created_at: initial.created_at,
+    updated_at: initial.updated_at,
     name: overrides.name ?? initial.name,
     description: overrides.description ?? initial.description,
-    literatures: overrides.literatures ?? [...initial.literatures],
-    quantitatives: overrides.quantitatives ?? [...initial.quantitatives],
+    literatures: overrides.literatures ?? initial.literatures,
+    quantitatives: overrides.quantitatives ?? initial.quantitatives,
   };
 }
