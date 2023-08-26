@@ -23,7 +23,7 @@ def read_quantitatives():
 
 
 # READ details of a quantitative
-@quantitative_bp.get("/<int:quantitative_id>")
+@quantitative_bp.get("/<int:quantitative_id>/")
 def read_quantitative(quantitative_id):
     db = init_oltp()
     with db.session as session:
@@ -98,11 +98,14 @@ def create_quantitative():
             independent_id = None
             dependent_id = None
             for key, value in construct_map.items():
-                if e["influencer"]["name"] == key:
+                if e["influencer_construct"]["name"] == key:
                     influencer_id = value
-                if e["independent"] is not None and e["independent"]["name"] == key:
+                if (
+                    e["independent_construct"] is not None
+                    and e["independent_construct"]["name"] == key
+                ):
                     independent_id = value
-                if e["dependent"]["name"] == key:
+                if e["dependent_construct"]["name"] == key:
                     dependent_id = value
             relation_object = dict(
                 quantitative_id=quantitative_id,
@@ -120,23 +123,20 @@ def create_quantitative():
 
 
 # UPDATE properties of a quantitative
-@quantitative_bp.put("/<int:quantitative_id>")
+@quantitative_bp.put("/<int:quantitative_id>/")
 def update_quantitative(quantitative_id):
     values = request.get_json()
+
     db = init_oltp()
     with db.session as session:
-        quantitative_update = (
-            update(Quantitative)
-            .where(Quantitative.id == quantitative_id)
-            .values(values)
-        )
+        quantitative_update = update(Quantitative).values(values)
         session.execute(quantitative_update)
         session.commit()
         return "", StatusCode.NO_CONTENT
 
 
 # DELETE a quantitative
-@quantitative_bp.delete("/<int:quantitative_id>")
+@quantitative_bp.delete("/<int:quantitative_id>/")
 def delete_quantitative(quantitative_id):
     db = init_oltp()
     with db.session as session:
@@ -194,8 +194,8 @@ def create_analysis(quantitative_id):
 
 
 # UPDATE an analysis
-@quantitative_bp.put("/<int:quantitative_id>/analysis/<int:analysis_id>")
-def update_analysis(quantitative_id, analysis_id):
+@quantitative_bp.put("/<int:quantitative_id>/analysis/")
+def update_analysis(quantitative_id):
     values = request.get_json()
 
     db = init_oltp()
@@ -211,32 +211,34 @@ def update_analysis(quantitative_id, analysis_id):
 
 
 # DELETE an analysis
-@quantitative_bp.delete("/<int:quantitative_id>/analysis/<int:analysis_id>")
-def delete_analysis(quantitative_id, analysis_id):
+@quantitative_bp.delete("/<int:quantitative_id>/analysis/")
+def delete_analysis(quantitative_id):
     db = init_oltp()
     with db.session as session:
-        analysis_delete = delete(Analysis).where(Analysis.id == analysis_id)
+        analysis_delete = delete(Analysis).where(
+            Analysis.quantitative_id == quantitative_id
+        )
         session.execute(analysis_delete)
         session.commit()
         return "", StatusCode.NO_CONTENT
 
 
 # CREATE bulk of relations
-@quantitative_bp.post("/<int:quantitative_id>/relation")
+@quantitative_bp.post("/<int:quantitative_id>/relation/")
 def create_relations(quantitative_id):
     request_body = request.get_json()
     values = request_body["relations"]
 
     db = init_oltp()
     with db.session as session:
-        relations_insert = insert(Relation).values(values)
-        session.execute(relations_insert)
+        relations_insert = insert(Relation)
+        session.execute(relations_insert, values)
         session.commit()
         return "", StatusCode.CREATED
 
 
 # UPDATE bulk of relations
-@quantitative_bp.put("/<int:quantitative_id>/relation")
+@quantitative_bp.put("/<int:quantitative_id>/relation/")
 def update_relations(quantitative_id):
     request_body = request.get_json()
     values = request_body["relations"]
@@ -250,7 +252,7 @@ def update_relations(quantitative_id):
 
 
 # DELETE bulk of relations
-@quantitative_bp.delete("/<int:quantitative_id>/relation")
+@quantitative_bp.delete("/<int:quantitative_id>/relation/")
 def delete_relations(quantitative_id):
     request_body = request.get_json()
     values = request_body["relation_ids"]
@@ -264,21 +266,21 @@ def delete_relations(quantitative_id):
 
 
 # CREATE bulk of constructs
-@quantitative_bp.post("/<int:quantitative_id>/construct")
+@quantitative_bp.post("/<int:quantitative_id>/construct/")
 def create_constructs(quantitative_id):
     request_body = request.get_json()
     values = request_body["constructs"]
 
     db = init_oltp()
     with db.session as session:
-        constructs_insert = insert(Construct).values(values)
-        session.execute(constructs_insert)
+        constructs_insert = insert(Construct)
+        session.execute(constructs_insert, values)
         session.commit()
         return "", StatusCode.CREATED
 
 
 # UPDATE bulk of constructs
-@quantitative_bp.put("/<int:quantitative_id>/construct")
+@quantitative_bp.put("/<int:quantitative_id>/construct/")
 def update_constructs(quantitative_id):
     request_body = request.get_json()
     values = request_body["constructs"]
@@ -292,7 +294,7 @@ def update_constructs(quantitative_id):
 
 
 # DELETE bulk of constructs
-@quantitative_bp.delete("/<int:quantitative_id>/construct")
+@quantitative_bp.delete("/<int:quantitative_id>/construct/")
 def delete_constructs(quantitative_id):
     request_body = request.get_json()
     values = request_body["construct_ids"]
@@ -306,7 +308,7 @@ def delete_constructs(quantitative_id):
 
 
 # UPDATE bulk of indicators
-@quantitative_bp.put("/<int:quantitative_id>/indicator")
+@quantitative_bp.put("/<int:quantitative_id>/indicator/")
 def update_indicators(quantitative_id):
     request_body = request.get_json()
     values = request_body["indicators"]
