@@ -42,6 +42,7 @@ class RelationType(str, Enum):
 
 class AnalysisType(str, Enum):
     DESCRIPTIVE = "descriptive statistics"
+    HYPOTHESIS = "hypothesis testing"
 
 
 @dataclass

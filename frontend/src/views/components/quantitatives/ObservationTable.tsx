@@ -1,7 +1,7 @@
 import { Table, Pagination, FileUpload } from "@cloudscape-design/components";
 import { Dispatch, SetStateAction, useState } from "react";
 import {
-  ObservationDatum,
+  Datum,
   ObservationModel,
   QuantitativeModel,
 } from "../../../models/quantitative-model";
@@ -33,7 +33,7 @@ export default function ObservationTable({
 
     return columns.map((e) => ({
       header: e,
-      cell: (item: ObservationDatum) => item[e],
+      cell: (item: Datum) => item[e],
       width: 200,
     }));
   };

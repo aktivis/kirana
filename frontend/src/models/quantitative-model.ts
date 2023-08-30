@@ -1,4 +1,4 @@
-export type ObservationDatum = {
+export type Datum = {
   [key: string]: undefined | number | string | boolean;
 };
 
@@ -20,12 +20,18 @@ export enum RelationType {
 
 export enum AnalysisType {
   DESCRIPTIVE = "descriptive statistics",
+  HYPOTHESIS = "hypothesis testing",
+}
+
+export interface AnalysisResult {
+  columns: string[];
+  data: Datum[];
 }
 
 export interface ObservationModel {
   length: number;
   columns: string[];
-  data: ObservationDatum[];
+  data: Datum[];
 }
 
 export interface IndicatorModel {
@@ -62,7 +68,7 @@ export interface AnalysisModel {
   quantitative_id: number | undefined;
   name: string;
   type: AnalysisType;
-  result: JSON | null;
+  result: AnalysisResult | null;
 }
 
 export interface QuantitativeModel {
@@ -96,6 +102,16 @@ export function createRelationModel(): RelationModel {
     influencer_construct: undefined,
     independent_construct: null,
     dependent_construct: undefined,
+  };
+}
+
+export function createAnalysisModel(quantitative_id: number): AnalysisModel {
+  return {
+    id: undefined,
+    quantitative_id: quantitative_id,
+    name: "",
+    type: AnalysisType.DESCRIPTIVE,
+    result: null,
   };
 }
 
