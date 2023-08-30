@@ -6,8 +6,9 @@ import {
   Tabs,
   Box,
 } from "@cloudscape-design/components";
-import { useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import {
+  AnalysisModel,
   ObservationModel,
   QuantitativeModel,
 } from "../../../models/quantitative-model";
@@ -17,7 +18,10 @@ import ObservationTable from "../../components/quantitatives/ObservationTable";
 import RelationEditor from "../../components/quantitatives/RelationEditor";
 import { useParams } from "react-router-dom";
 import { useGetQuantitative } from "../../../services/quantitatives/quantitative-service";
-import { QuantitativeDialogContext } from "../../../utils/providers";
+import {
+  AnalysisDialogContext,
+  QuantitativeDialogContext,
+} from "../../../utils/providers";
 import { QuantitativeDialog } from "../../components/quantitatives/QuantitativeDialog";
 import {
   useDeleteConstructs,
@@ -40,19 +44,32 @@ import {
 import { useUpdateIndicators } from "../../../services/quantitatives/indicator-service";
 import { checkIndicatorsSimilarity } from "../../../controllers/indicator-controller";
 import { useGetObservation } from "../../../services/quantitatives/observation-service";
+import AnalysisTable from "../../components/quantitatives/AnalysisTable";
+import AnalysisEditor from "../../components/quantitatives/AnalysisEditor";
+import { AnalysisDialog } from "../../components/quantitatives/AnalysisDialog";
+import { usePostAnalyses } from "../../../services/quantitatives/analysis-service";
 
 export default function QuantitativeDetailPage() {
   const { quanID } = useParams();
   const { data, loading } = useGetQuantitative(quanID!);
-  const [showDialog, setShowDialog] = useState(false);
-  const [dialogType, setDialogType] = useState<string>();
-  const [dialogData, setDialogData] = useState<QuantitativeModel>();
+  const [showQuantyDialog, setShowQuantyDialog] = useState(false);
+  const [quantyDialogType, setQuantyDialogType] = useState<string>();
+  const [quantyDialogData, setQuantyDialogData] = useState<QuantitativeModel>();
+  const [showAnalysisDialog, setShowAnalysisDialog] = useState(false);
+  const [analysisDialogType, setAnalysisDialogType] = useState<string>();
+  const [analysisDialogData, setAnalysisDialogData] = useState<AnalysisModel>();
 
   const QuantitativeDetailState = () => {
     return loading ? (
       <p>Loading...</p>
     ) : (
-      <QuantitativeDetailContent data={data!} quantitativeID={quanID!} />
+      <QuantitativeDetailContent
+        data={data!}
+        quantitativeID={quanID!}
+        setShowAnalysisDialog={setShowAnalysisDialog}
+        setAnalysisDialogType={setAnalysisDialogType}
+        setAnalysisDialogData={setAnalysisDialogData}
+      />
     );
   };
 
@@ -65,18 +82,18 @@ export default function QuantitativeDetailPage() {
               <SpaceBetween size="xs" direction="horizontal">
                 <Button
                   onClick={() => {
-                    setDialogType("rename");
-                    setDialogData(data!);
-                    setShowDialog(true);
+                    setQuantyDialogType("rename");
+                    setQuantyDialogData(data!);
+                    setShowQuantyDialog(true);
                   }}
                 >
                   Rename
                 </Button>
                 <Button
                   onClick={() => {
-                    setDialogType("delete");
-                    setDialogData(data!);
-                    setShowDialog(true);
+                    setQuantyDialogType("delete");
+                    setQuantyDialogData(data!);
+                    setShowQuantyDialog(true);
                   }}
                 >
                   Delete
@@ -91,10 +108,21 @@ export default function QuantitativeDetailPage() {
     >
       <QuantitativeDetailState />
       <QuantitativeDialogContext.Provider
-        value={{ type: dialogType, data: dialogData }}
+        value={{ type: quantyDialogType, data: quantyDialogData }}
       >
-        <QuantitativeDialog visible={showDialog} setVisible={setShowDialog} />
+        <QuantitativeDialog
+          visible={showQuantyDialog}
+          setVisible={setShowQuantyDialog}
+        />
       </QuantitativeDialogContext.Provider>
+      <AnalysisDialogContext.Provider
+        value={{ type: analysisDialogType, data: analysisDialogData }}
+      >
+        <AnalysisDialog
+          visible={showAnalysisDialog}
+          setVisible={setShowAnalysisDialog}
+        />
+      </AnalysisDialogContext.Provider>
     </ContentLayout>
   );
 }
@@ -102,9 +130,15 @@ export default function QuantitativeDetailPage() {
 function QuantitativeDetailContent({
   data,
   quantitativeID,
+  setShowAnalysisDialog,
+  setAnalysisDialogType,
+  setAnalysisDialogData,
 }: {
   data: QuantitativeModel;
   quantitativeID: string;
+  setShowAnalysisDialog: Dispatch<SetStateAction<boolean>>;
+  setAnalysisDialogType: Dispatch<SetStateAction<string | undefined>>;
+  setAnalysisDialogData: Dispatch<SetStateAction<AnalysisModel | undefined>>;
 }) {
   const [tab, setTab] = useState("analyses");
   const [observationPage, setObservationPage] = useState(1);
@@ -114,6 +148,7 @@ function QuantitativeDetailContent({
     observationPage.toString()
   );
   const [observations, setObservations] = useState<ObservationModel>();
+  const [analyses, setAnalyses] = useState<AnalysisModel[]>([]);
   const oldIndicators = useRef(quantitative.indicators).current;
   const oldConstructs = useRef(quantitative.constructs).current;
   const oldRelations = useRef(quantitative.relations).current;
@@ -130,6 +165,7 @@ function QuantitativeDetailContent({
   const { deleteTrigger: deleteRelations } = useDeleteRelations(quantitativeID);
   const { postTrigger: postRelations } = usePostRelations(quantitativeID);
   const { updateTrigger: updateRelations } = useUpdateRelations(quantitativeID);
+  const { postTrigger: postAnalyses } = usePostAnalyses(quantitativeID);
 
   useEffect(() => {
     if (!loading) {
@@ -180,7 +216,42 @@ function QuantitativeDetailContent({
           {
             id: "analyses",
             label: "Analyses",
-            content: <p>Hello statistics</p>,
+            content: (
+              <SpaceBetween direction="vertical" size="l">
+                {quantitative.analyses.map((analysis, index) => (
+                  <AnalysisTable
+                    key={index}
+                    analysis={analysis}
+                    setShowAnalysisDialog={setShowAnalysisDialog}
+                    setAnalysisDialogType={setAnalysisDialogType}
+                    setAnalysisDialogData={setAnalysisDialogData}
+                  />
+                ))}
+                <AnalysisEditor
+                  quantitativeID={Number.parseInt(quantitativeID)}
+                  analyses={analyses}
+                  setAnalyses={setAnalyses}
+                />
+                <Box float="right">
+                  <SpaceBetween direction="horizontal" size="xs">
+                    <Button
+                      variant="link"
+                      disabled={!analyses.length}
+                      onClick={() => setAnalyses([])}
+                    >
+                      Reset
+                    </Button>
+                    <Button
+                      variant="primary"
+                      disabled={!analyses.length}
+                      onClick={() => postAnalyses(analyses)}
+                    >
+                      Save changes
+                    </Button>
+                  </SpaceBetween>
+                </Box>
+              </SpaceBetween>
+            ),
           },
           {
             id: "relations",
