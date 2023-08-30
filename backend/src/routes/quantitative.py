@@ -201,50 +201,66 @@ def create_observation(quantitative_id):
 
 # RUN an analysis
 @quantitative_bp.patch("/<int:quantitative_id>/analysis/<int:analysis_id>")
-def run_analysis():
-    # [TODO] to be implemented after frontend is ready
-    pass
+def run_analysis(quantitative_id, analysis_id):
+    values = request.get_json()
+
+    db = init_oltp()
+    with db.session as session:
+        quantitative_select = select(Quantitative.observation_code)
+        quantitative_filter = quantitative_select.where(
+            Quantitative.id == values["quantitative_id"]
+        )
+        observation_code = session.execute(quantitative_filter).scalar()
+
+        with init_olap() as connection:
+            analysis = (
+                connection.table(observation_code).pl().select(pl.exclude(pl.Utf8))
+            )
+            result = analysis.describe()
+            analysis_update = update(Analysis).values(
+                id=analysis_id,
+                result={"columns": result.columns, "data": result.to_dicts()},
+            )
+            session.execute(analysis_update)
+            session.commit()
+
+    return "", StatusCode.CREATED
 
 
 # CREATE an analysis
 @quantitative_bp.post("/<int:quantitative_id>/analysis")
 def create_analysis(quantitative_id):
-    values = request.get_json()
-    values["quantitative_id"] = quantitative_id
+    request_body = request.get_json()
+    values = request_body["analyses"]
 
     db = init_oltp()
     with db.session as session:
-        analysis_insert = insert(Analysis).values(values)
-        session.execute(analysis_insert)
+        analysis_insert = insert(Analysis)
+        session.execute(analysis_insert, values)
         session.commit()
         return "", StatusCode.CREATED
 
 
 # UPDATE an analysis
-@quantitative_bp.put("/<int:quantitative_id>/analysis/")
-def update_analysis(quantitative_id):
+@quantitative_bp.put("/<int:quantitative_id>/analysis/<int:analysis_id>")
+def update_analysis(quantitative_id, analysis_id):
     values = request.get_json()
+    values["id"] = analysis_id
 
     db = init_oltp()
     with db.session as session:
-        analysis_update = (
-            update(Analysis)
-            .where(Analysis.quantitative_id == quantitative_id)
-            .values(values)
-        )
+        analysis_update = update(Analysis).values(values)
         session.execute(analysis_update)
         session.commit()
         return "", StatusCode.NO_CONTENT
 
 
 # DELETE an analysis
-@quantitative_bp.delete("/<int:quantitative_id>/analysis/")
-def delete_analysis(quantitative_id):
+@quantitative_bp.delete("/<int:quantitative_id>/analysis/<int:analysis_id>")
+def delete_analysis(quantitative_id, analysis_id):
     db = init_oltp()
     with db.session as session:
-        analysis_delete = delete(Analysis).where(
-            Analysis.quantitative_id == quantitative_id
-        )
+        analysis_delete = delete(Analysis).where(Analysis.id == analysis_id)
         session.execute(analysis_delete)
         session.commit()
         return "", StatusCode.NO_CONTENT
