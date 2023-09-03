@@ -60,7 +60,7 @@ export const usePostQuantitative = () => {
     });
     if (!res.ok)
       throw new Error("Error while creating a new quantitative model.");
-    return res.json() as Partial<QuantitativeModel>;
+    return res.text();
   };
 
   const { trigger, isMutating } = useSWRMutation(ALL_QUANTITATIVES, fetcher);

@@ -33,15 +33,15 @@ export default function QuantitativeCreatePage() {
           nextButton: "Next",
           previousButton: "Previous",
         }}
-        onSubmit={() => {
-          postQuantitative({
+        onSubmit={async () => {
+          await postQuantitative({
             research_id: Number.parseInt(id!),
             name: quantitative.name,
             indicators: quantitative.indicators,
             constructs: quantitative.constructs,
             relations: quantitative.relations,
           });
-          postObservations(file!);
+          await postObservations(file!);
         }}
         steps={[
           {
