@@ -1,15 +1,22 @@
 packager() {
   cd backend
+  poetry env remove --all
   rm -rf .venv out
-  python3 -m venv .venv
-  . .venv/bin/activate
-  pip3 install -r requirements.txt
-  pyinstaller --onefile server.py --name "Kirana Server" --specpath out --workpath out/build --distpath out/dist
+  poetry shell
+  poetry install
+  rm -rf kirana.sqlite kirana.duckdb
+  touch kirana.sqlite kirana.duckdb
+  pyinstaller --onefile server.py --name "kirana-server-aarch64-apple-darwin" --specpath out --workpath out/build --distpath out/dist --hidden-import=pyduckdb --hidden-import=pyduckdb.filesystem
 
   cd ../frontend
-  rm -rf node_modules package-lock.json out
+  rm -rf node_modules
   npm install
-  npm run make
+  
+  cd ../desktop
+  rm -rf target
+  cargo tauri build
+
+  cd ..
 }
 
 "$@"

@@ -2,14 +2,14 @@
 
 - Frontend: React
 - Backend: Flask
-- Database: SQLite
+- OLTP: SQLite
+- OLAP: DuckDB
 - Design: Cloudscape
-- Platform: Electron
+- Testing: Playwright
+- Platform: Tauri
 - Data:
   - D3
-  - Pandas
-  - Statsmodels (soon)
-  - NLTK (soon)
+  - Polars
 - User Interface: Storybook (soon)
 - User Experience: XState (soon)
-- Documentation: Docusaurus
+- Documentation: Starlight
