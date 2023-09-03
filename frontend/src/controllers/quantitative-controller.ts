@@ -40,10 +40,6 @@ export const handleCSV = async (
   const newState = copyQuantitativeModel(quantitative, {
     indicators: newIndicators,
   });
-
-  // to be deleted
-  console.log(newState);
-
   setQuantitative(newState);
   return csv;
 };
@@ -64,10 +60,6 @@ export const handleIndicatorProps = (
   const newState = copyQuantitativeModel(quantitative, {
     indicators: newIndicators,
   });
-
-  // to be deleted
-  console.log(newState);
-
   setQuantitative(newState);
 };
 
@@ -95,10 +87,6 @@ export const handleIndicatorPreferences = (
   const newState = copyQuantitativeModel(quantitative, {
     indicators: newIndicators,
   });
-
-  // to be deleted
-  console.log(newState);
-
   setQuantitative(newState);
 };
 
@@ -138,9 +126,5 @@ export const handleRelation = (
       independent_construct: i === index ? null : e.independent_construct,
     };
   });
-
-  // to be deleted
-  console.log(newRelations);
-
   setRelations(newRelations);
 };

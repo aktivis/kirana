@@ -16,10 +16,6 @@ export const useGetObservation = (id: string, page: string) => {
   };
 
   const { data, isLoading, error, mutate } = useSWR(PAGINATED_KEY, fetcher);
-
-  console.log();
-  console.log(data?.data);
-
   return {
     data: data,
     loading: isLoading,

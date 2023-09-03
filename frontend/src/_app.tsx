@@ -24,7 +24,7 @@ const router = createBrowserRouter([
     path: "/",
     element: <App />,
     children: [
-      { index: true, element: <HomePage /> }, // to be changed into HomePage
+      { index: true, element: <HomePage /> },
       { path: ":id", element: <ResearchPage /> },
       { path: ":id/quantitative", element: <QuantitativeCreatePage /> },
       {

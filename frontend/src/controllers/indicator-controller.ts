@@ -6,7 +6,6 @@ export const checkIndicatorsSimilarity = (
   newIndicators: IndicatorModel[],
   setSimilarIndicators: Dispatch<SetStateAction<boolean>>
 ) => {
-  console.log(oldIndicators, newIndicators);
   if (JSON.stringify(oldIndicators) !== JSON.stringify(newIndicators)) {
     setSimilarIndicators(false);
   } else {
