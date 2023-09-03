@@ -3,10 +3,9 @@ from dotenv import load_dotenv
 from flask import Flask, make_response
 from sqlalchemy import Engine, event
 from sqlite3 import Connection as SQLiteConnection
-from waitress import serve
 
-from .routes.literature import literature_bp
 from .databases.transactional import init_oltp, reg
+from .routes.literature import literature_bp
 from .routes.research import research_bp
 from .routes.quantitative import quantitative_bp
 
@@ -16,7 +15,7 @@ load_dotenv()
 
 # Define configurations
 class Config:
-    TRANSACTIONAL_DB = getenv("TRANSACTIONAL_DB") or "sqlite:///kirana.sqlite"
+    TRANSACTIONAL_DB = getenv("TRANSACTIONAL_DB") or "kirana.sqlite"
     ANALYTICAL_DB = getenv("ANALYTICAL_DB") or "kirana.duckdb"
     SERVER_HOST = getenv("SERVER_HOST") or "127.0.0.1"
     SERVER_PORT = getenv("SERVER_PORT") or "5000"
@@ -48,14 +47,6 @@ def create_app():
 app = create_app()
 
 
-@event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    if isinstance(dbapi_connection, SQLiteConnection):
-        cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON;")
-        cursor.close()
-
-
 # Add request  headers
 @app.after_request
 def after_request(response):
@@ -67,14 +58,10 @@ def after_request(response):
     return response
 
 
-# Define server
-def start_server():
-    if app.debug:
-        app.run()
-    else:
-        serve(app, host=app.config["SERVER_HOST"], port=app.config["SERVER_PORT"])
-
-
-# Run the server
-if __name__ == "__main__":
-    start_server()
+# Enable foreign key support for SQLite
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    if isinstance(dbapi_connection, SQLiteConnection):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON;")
+        cursor.close()
