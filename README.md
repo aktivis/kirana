@@ -1,7 +1,15 @@
 ### [ Tech Stack ]
 
 - Frontend: React
-- Backend: Django
-- Database: SQLite
-- Design: Github Primer
-- Platform: Electron
+- Backend: Flask
+- OLTP: SQLite
+- OLAP: DuckDB
+- Design: Cloudscape
+- Testing: Playwright
+- Platform: Tauri
+- Data:
+  - D3
+  - Polars
+- User Interface: Storybook (soon)
+- User Experience: XState (soon)
+- Documentation: Starlight

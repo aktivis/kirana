@@ -1,4 +1,15 @@
-node_modules
+.DS_Store
+.env
 .vite
 .venv
 .docusaurus
+.vscode
+node_modules
+__pycache__
+out
+dist
+playwright-report
+target
+test-results
+*.sqlite
+*.duckdb
