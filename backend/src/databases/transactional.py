@@ -5,6 +5,8 @@ from typing import Annotated
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker, mapped_column, registry
 
+from ..utils.app_path import app_path
+
 
 reg = registry()
 PrimaryID = Annotated[int, mapped_column(primary_key=True, autoincrement=True)]
@@ -30,7 +32,9 @@ class TransactionalDB:
 
 
 def init_oltp():
-    engine = create_engine(current_app.config["TRANSACTIONAL_DB"])
+    engine = create_engine(
+        "sqlite:///{}".format(app_path(current_app.config["TRANSACTIONAL_DB"]))
+    )
     Session = sessionmaker(engine)
     return TransactionalDB(engine=engine, session=Session())
 
