@@ -183,7 +183,7 @@ def read_observation(quantitative_id):
 # UPSERT properties of an observation
 @quantitative_bp.patch("/<int:quantitative_id>/observation/")
 def create_observation(quantitative_id):
-    csv_file = request.files.get("csv")
+    csv_file = request.files["csv"]
 
     db = init_oltp()
     with db.session as session:
@@ -192,10 +192,9 @@ def create_observation(quantitative_id):
             Quantitative.id == quantitative_id
         )
         observation_code = session.execute(quantitative_filter).scalar()
-        data = pl.read_csv(csv_file).to_arrow()
 
         with init_olap() as connection:
-            connection.from_arrow(data).create(observation_code)
+            connection.read_csv(csv_file.stream).create(observation_code)
             return "", StatusCode.CREATED
 
 
