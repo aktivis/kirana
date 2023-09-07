@@ -16,27 +16,30 @@ export default function Sidebar() {
         event.preventDefault();
         setActiveHref(event.detail.href);
         navigate(
-          event.detail.href.replace(":id", location.pathname.split("/")[1])
+          event.detail.href.replace(
+            ":research_id",
+            location.pathname.split("/")[1]
+          )
         );
       }}
       header={{ href: "/", text: "Kirana Desktop" }}
       items={[
-        { type: "link", href: "/:id", text: "Project Kirana NEW" },
+        { type: "link", href: "/:research_id", text: "Project Kirana NEW" },
         { type: "divider" },
         {
           type: "link-group",
           text: "Theoritical Foundations",
-          href: "/:id/theory",
+          href: "/:research_id/theory",
           items: [
             {
               type: "link",
               text: "References",
-              href: "/:id/theory/reference?page=index",
+              href: "/:research_id/theory/reference?page=index",
             },
             {
               type: "link",
               text: "Bibliography",
-              href: "/:id/theory/bibliography",
+              href: "/:research_id/theory/bibliography",
             },
           ],
         },
@@ -44,11 +47,11 @@ export default function Sidebar() {
         {
           type: "link-group",
           text: "Quantitative Analyses",
-          href: "/:id/quantitative",
+          href: "/:research_id/quantitative",
           items: data?.map((e) => ({
             type: "link",
             text: e?.name ?? "",
-            href: `/:id/quantitative/${e?.id}`,
+            href: `/:research_id/quantitative/${e?.id}`,
           })),
         },
       ]}

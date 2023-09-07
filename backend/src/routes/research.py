@@ -20,7 +20,7 @@ def read_researches():
 
 
 # READ details of a research
-@research_bp.get("/<int:research_id>/")
+@research_bp.get("/<int:research_id>")
 def read_research(research_id):
     db = init_oltp()
     with db.session as session:
@@ -48,7 +48,7 @@ def create_research():
 
 
 # UPDATE properties of a research
-@research_bp.put("/<int:research_id>/")
+@research_bp.put("/<int:research_id>")
 def update_research(research_id):
     values = request.get_json()
 
@@ -63,7 +63,7 @@ def update_research(research_id):
 
 
 # DELETE a research
-@research_bp.delete("/<int:research_id>/")
+@research_bp.delete("/<int:research_id>")
 def delete_research(research_id):
     db = init_oltp()
     with db.session as session:
