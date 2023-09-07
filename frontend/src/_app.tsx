@@ -25,18 +25,24 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: ":id", element: <ResearchPage /> },
-      { path: ":id/quantitative", element: <QuantitativeCreatePage /> },
+      { path: ":research_id", element: <ResearchPage /> },
       {
-        path: ":id/quantitative/:quanID",
+        path: ":research_id/quantitative",
+        element: <QuantitativeCreatePage />,
+      },
+      {
+        path: ":research_id/quantitative/:quantitative_id",
         element: <QuantitativeDetailPage />,
       },
-      { path: "/:id/theory", element: <div>Coming soon.</div> },
+      { path: ":research_id/theory", element: <div>Coming soon.</div> },
       {
-        path: "/:id/theory/reference",
+        path: ":research_id/theory/reference",
         element: <div>Coming soon.</div>,
       },
-      { path: "/:id/theory/bibliography", element: <div>Coming soon.</div> },
+      {
+        path: ":research_id/theory/bibliography",
+        element: <div>Coming soon.</div>,
+      },
     ],
   },
 ]);
