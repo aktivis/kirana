@@ -31,7 +31,7 @@ def read_quantitatives():
 
 
 # READ details of a quantitative
-@quantitative_bp.get("/<int:quantitative_id>/")
+@quantitative_bp.get("/<int:quantitative_id>")
 def read_quantitative(quantitative_id):
     db = init_oltp()
     with db.session as session:
@@ -131,9 +131,10 @@ def create_quantitative():
 
 
 # UPDATE properties of a quantitative
-@quantitative_bp.put("/<int:quantitative_id>/")
+@quantitative_bp.put("/<int:quantitative_id>")
 def update_quantitative(quantitative_id):
     values = request.get_json()
+    values["id"] = quantitative_id
 
     db = init_oltp()
     with db.session as session:
@@ -144,7 +145,7 @@ def update_quantitative(quantitative_id):
 
 
 # DELETE a quantitative
-@quantitative_bp.delete("/<int:quantitative_id>/")
+@quantitative_bp.delete("/<int:quantitative_id>")
 def delete_quantitative(quantitative_id):
     db = init_oltp()
     with db.session as session:
@@ -157,50 +158,35 @@ def delete_quantitative(quantitative_id):
 
 
 # READ a paginated observation
-@quantitative_bp.get("/<int:quantitative_id>/observation")
-def read_observation(quantitative_id):
+@quantitative_bp.get("/observation/<string:slug>")
+def read_observation(slug):
     page = request.args.get("page", default=1, type=int)
 
-    db = init_oltp()
-    with db.session as session:
-        quantitative_select = select(Quantitative.observation_code)
-        quantitative_filter = quantitative_select.where(
-            Quantitative.id == quantitative_id
+    with init_olap() as connection:
+        (count,) = connection.table(slug).count("*").fetchone()
+        df = connection.table(slug).limit(page * 5, (page - 1) * 5).pl()
+        response = Observation(
+            length=count,
+            columns=df.columns,
+            data=df.to_dicts(),
         )
-        observation_code = session.execute(quantitative_filter).scalar()
-
-        with init_olap() as connection:
-            count = connection.table(observation_code).count("*").fetchone()
-            df = connection.table(observation_code).limit(page * 5, (page - 1) * 5).pl()
-            response = Observation(
-                length=count[0],
-                columns=df.columns,
-                data=df.to_dicts(),
-            )
-            return jsonify(response), StatusCode.OK
+        return jsonify(response), StatusCode.OK
 
 
 # UPSERT properties of an observation
-@quantitative_bp.patch("/<int:quantitative_id>/observation/")
-def create_observation(quantitative_id):
-    csv_file = request.files["csv"]
+@quantitative_bp.patch("/observation")
+def create_observation():
+    observation_code = request.form.get("observation_code")
+    csv_file = request.files.get("csv_file")
 
-    db = init_oltp()
-    with db.session as session:
-        quantitative_select = select(Quantitative.observation_code)
-        quantitative_filter = quantitative_select.where(
-            Quantitative.id == quantitative_id
-        )
-        observation_code = session.execute(quantitative_filter).scalar()
-
-        with init_olap() as connection:
-            connection.read_csv(csv_file.stream).create(observation_code)
-            return "", StatusCode.CREATED
+    with init_olap() as connection:
+        connection.read_csv(csv_file.stream).create(observation_code)
+        return "", StatusCode.CREATED
 
 
 # RUN an analysis
-@quantitative_bp.patch("/<int:quantitative_id>/analysis/<int:analysis_id>")
-def run_analysis(quantitative_id, analysis_id):
+@quantitative_bp.patch("/analysis/<int:analysis_id>")
+def run_analysis(analysis_id):
     values = request.get_json()
 
     db = init_oltp()
@@ -227,8 +213,8 @@ def run_analysis(quantitative_id, analysis_id):
 
 
 # CREATE an analysis
-@quantitative_bp.post("/<int:quantitative_id>/analysis")
-def create_analysis(quantitative_id):
+@quantitative_bp.post("/analysis")
+def create_analysis():
     request_body = request.get_json()
     values = request_body["analyses"]
 
@@ -241,8 +227,8 @@ def create_analysis(quantitative_id):
 
 
 # UPDATE an analysis
-@quantitative_bp.put("/<int:quantitative_id>/analysis/<int:analysis_id>")
-def update_analysis(quantitative_id, analysis_id):
+@quantitative_bp.put("/analysis/<int:analysis_id>")
+def update_analysis(analysis_id):
     values = request.get_json()
     values["id"] = analysis_id
 
@@ -255,8 +241,8 @@ def update_analysis(quantitative_id, analysis_id):
 
 
 # DELETE an analysis
-@quantitative_bp.delete("/<int:quantitative_id>/analysis/<int:analysis_id>")
-def delete_analysis(quantitative_id, analysis_id):
+@quantitative_bp.delete("/analysis/<int:analysis_id>")
+def delete_analysis(analysis_id):
     db = init_oltp()
     with db.session as session:
         analysis_delete = delete(Analysis).where(Analysis.id == analysis_id)
@@ -266,8 +252,8 @@ def delete_analysis(quantitative_id, analysis_id):
 
 
 # CREATE bulk of relations
-@quantitative_bp.post("/<int:quantitative_id>/relation/")
-def create_relations(quantitative_id):
+@quantitative_bp.post("/relation")
+def create_relations():
     request_body = request.get_json()
     values = request_body["relations"]
 
@@ -280,8 +266,8 @@ def create_relations(quantitative_id):
 
 
 # UPDATE bulk of relations
-@quantitative_bp.put("/<int:quantitative_id>/relation/")
-def update_relations(quantitative_id):
+@quantitative_bp.put("/relation")
+def update_relations():
     request_body = request.get_json()
     values = request_body["relations"]
 
@@ -294,8 +280,8 @@ def update_relations(quantitative_id):
 
 
 # DELETE bulk of relations
-@quantitative_bp.delete("/<int:quantitative_id>/relation/")
-def delete_relations(quantitative_id):
+@quantitative_bp.delete("/relation")
+def delete_relations():
     request_body = request.get_json()
     values = request_body["relation_ids"]
 
@@ -308,8 +294,8 @@ def delete_relations(quantitative_id):
 
 
 # CREATE bulk of constructs
-@quantitative_bp.post("/<int:quantitative_id>/construct/")
-def create_constructs(quantitative_id):
+@quantitative_bp.post("/construct")
+def create_constructs():
     request_body = request.get_json()
     values = request_body["constructs"]
 
@@ -322,8 +308,8 @@ def create_constructs(quantitative_id):
 
 
 # UPDATE bulk of constructs
-@quantitative_bp.put("/<int:quantitative_id>/construct/")
-def update_constructs(quantitative_id):
+@quantitative_bp.put("/construct")
+def update_constructs():
     request_body = request.get_json()
     values = request_body["constructs"]
 
@@ -336,8 +322,8 @@ def update_constructs(quantitative_id):
 
 
 # DELETE bulk of constructs
-@quantitative_bp.delete("/<int:quantitative_id>/construct/")
-def delete_constructs(quantitative_id):
+@quantitative_bp.delete("/construct")
+def delete_constructs():
     request_body = request.get_json()
     values = request_body["construct_ids"]
 
@@ -350,8 +336,8 @@ def delete_constructs(quantitative_id):
 
 
 # UPDATE bulk of indicators
-@quantitative_bp.put("/<int:quantitative_id>/indicator/")
-def update_indicators(quantitative_id):
+@quantitative_bp.put("/indicator")
+def update_indicators():
     request_body = request.get_json()
     values = request_body["indicators"]
 
