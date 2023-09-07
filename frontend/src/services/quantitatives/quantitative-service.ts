@@ -1,20 +1,19 @@
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
-import { BASE_URL } from "../../utils/api";
 import { QuantitativeModel } from "../../models/quantitative-model";
-
-const ALL_QUANTITATIVES = `${BASE_URL}/quantitative`;
-const ONE_QUANTITATIVE = `${BASE_URL}/quantitative/:id`;
+import API, { CacheKey } from "../../utils/api";
 
 export const useGetQuantitatives = () => {
-  const fetcher = async (key: string) => {
-    const url = key + "/";
+  const key = { id: undefined, path: API.QUANTITATIVE };
+
+  const fetcher = async (key: CacheKey) => {
+    const url = key.path + "/";
     const res = await fetch(url, { method: "GET" });
     if (!res.ok) throw new Error("Error while fetching quantitative models.");
     return (await res.json())["quantitatives"] as Partial<QuantitativeModel[]>;
   };
 
-  const { data, isLoading, error, mutate } = useSWR(ALL_QUANTITATIVES, fetcher);
+  const { data, isLoading, error, mutate } = useSWR(key, fetcher);
   return {
     data: data ?? [],
     loading: isLoading,
@@ -23,16 +22,18 @@ export const useGetQuantitatives = () => {
   };
 };
 
-export const useGetQuantitative = (id: string) => {
-  const fetcher = async (key: string) => {
-    const url = key.replace(":id", id) + "/";
+export const useGetQuantitative = (quantitative_id: number) => {
+  const key = { id: quantitative_id, path: API.QUANTITATIVE };
+
+  const fetcher = async (key: CacheKey) => {
+    const url = key.path + "/" + key.id!.toString();
     const res = await fetch(url, { method: "GET" });
     if (!res.ok)
       throw new Error("Error while fetching the quantitative model.");
     return (await res.json()) as QuantitativeModel;
   };
 
-  const { data, isLoading, error, mutate } = useSWR(ONE_QUANTITATIVE, fetcher);
+  const { data, isLoading, error, mutate } = useSWR(key, fetcher);
   return {
     data: data,
     loading: isLoading,
@@ -42,11 +43,13 @@ export const useGetQuantitative = (id: string) => {
 };
 
 export const usePostQuantitative = () => {
+  const key = { id: undefined, path: API.QUANTITATIVE };
+
   const fetcher = async (
-    key: string,
+    key: CacheKey,
     { arg }: { arg: Partial<QuantitativeModel> }
   ) => {
-    const url = key + "/";
+    const url = key.path + "/";
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -63,19 +66,21 @@ export const usePostQuantitative = () => {
     return res.text();
   };
 
-  const { trigger, isMutating } = useSWRMutation(ALL_QUANTITATIVES, fetcher);
+  const { trigger, isMutating } = useSWRMutation(key, fetcher);
   return {
     postTrigger: trigger,
     isPosting: isMutating,
   };
 };
 
-export const useUpdateQuantitative = (id: string) => {
+export const useUpdateQuantitative = (quantitative_id: number) => {
+  const key = { id: quantitative_id, path: API.QUANTITATIVE };
+
   const fetcher = async (
-    key: string,
+    key: CacheKey,
     { arg }: { arg: Partial<QuantitativeModel> }
   ) => {
-    const url = key.replace(":id", id) + "/";
+    const url = key.path + "/" + key.id!.toString();
     const res = await fetch(url, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -90,23 +95,25 @@ export const useUpdateQuantitative = (id: string) => {
     return res.text();
   };
 
-  const { trigger, isMutating } = useSWRMutation(ONE_QUANTITATIVE, fetcher);
+  const { trigger, isMutating } = useSWRMutation(key, fetcher);
   return {
     updateTrigger: trigger,
     isUpdating: isMutating,
   };
 };
 
-export const useDeleteQuantitative = (id: string) => {
-  const fetcher = async (key: string) => {
-    const url = key.replace(":id", id) + "/";
+export const useDeleteQuantitative = (quantitative_id: number) => {
+  const key = { id: quantitative_id, path: API.QUANTITATIVE };
+
+  const fetcher = async (key: CacheKey) => {
+    const url = key.path + "/" + key.id!.toString();
     const res = await fetch(url, { method: "DELETE" });
     if (!res.ok)
       throw new Error("Error while deleting the quantitative model.");
     return res.text();
   };
 
-  const { trigger, isMutating } = useSWRMutation(ONE_QUANTITATIVE, fetcher);
+  const { trigger, isMutating } = useSWRMutation(key, fetcher);
   return {
     deleteTrigger: trigger,
     isDeleting: isMutating,

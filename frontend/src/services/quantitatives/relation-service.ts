@@ -1,12 +1,12 @@
 import useSWRMutation from "swr/mutation";
-import { BASE_URL } from "../../utils/api";
 import { RelationModel } from "../../models/quantitative-model";
+import API, { CacheKey } from "../../utils/api";
 
-const ONE_QUANTITATIVE = `${BASE_URL}/quantitative/:id`;
+export const usePostRelations = (quantitative_id: number) => {
+  const key = { id: quantitative_id, path: API.QUANTITATIVE };
 
-export const usePostRelations = (id: string) => {
-  const fetcher = async (key: string, { arg }: { arg: RelationModel[] }) => {
-    const url = key.replace(":id", id) + "/relation" + "/";
+  const fetcher = async (key: CacheKey, { arg }: { arg: RelationModel[] }) => {
+    const url = key.path + "/relation";
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -16,16 +16,18 @@ export const usePostRelations = (id: string) => {
     return res.text();
   };
 
-  const { trigger, isMutating } = useSWRMutation(ONE_QUANTITATIVE, fetcher);
+  const { trigger, isMutating } = useSWRMutation(key, fetcher);
   return {
     postTrigger: trigger,
     isPosting: isMutating,
   };
 };
 
-export const useUpdateRelations = (id: string) => {
-  const fetcher = async (key: string, { arg }: { arg: RelationModel[] }) => {
-    const url = key.replace(":id", id) + "/relation" + "/";
+export const useUpdateRelations = (quantitative_id: number) => {
+  const key = { id: quantitative_id, path: API.QUANTITATIVE };
+
+  const fetcher = async (key: CacheKey, { arg }: { arg: RelationModel[] }) => {
+    const url = key.path + "/relation";
     const res = await fetch(url, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -35,16 +37,18 @@ export const useUpdateRelations = (id: string) => {
     return res.text();
   };
 
-  const { trigger, isMutating } = useSWRMutation(ONE_QUANTITATIVE, fetcher);
+  const { trigger, isMutating } = useSWRMutation(key, fetcher);
   return {
     updateTrigger: trigger,
     isUpdating: isMutating,
   };
 };
 
-export const useDeleteRelations = (id: string) => {
-  const fetcher = async (key: string, { arg }: { arg: number[] }) => {
-    const url = key.replace(":id", id) + "/relation" + "/";
+export const useDeleteRelations = (quantitative_id: number) => {
+  const key = { id: quantitative_id, path: API.QUANTITATIVE };
+
+  const fetcher = async (key: CacheKey, { arg }: { arg: number[] }) => {
+    const url = key.path + "/relation";
     const res = await fetch(url, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
@@ -54,7 +58,7 @@ export const useDeleteRelations = (id: string) => {
     return res.text();
   };
 
-  const { trigger, isMutating } = useSWRMutation(ONE_QUANTITATIVE, fetcher);
+  const { trigger, isMutating } = useSWRMutation(key, fetcher);
   return {
     deleteTrigger: trigger,
     isDeleting: isMutating,

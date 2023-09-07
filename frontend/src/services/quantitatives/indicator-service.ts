@@ -1,12 +1,12 @@
 import useSWRMutation from "swr/mutation";
-import { BASE_URL } from "../../utils/api";
 import { IndicatorModel } from "../../models/quantitative-model";
+import API, { CacheKey } from "../../utils/api";
 
-const ONE_QUANTITATIVE = `${BASE_URL}/quantitative/:id`;
+export const useUpdateIndicators = (quantitative_id: number) => {
+  const key = { id: quantitative_id, path: API.QUANTITATIVE };
 
-export const useUpdateIndicators = (id: string) => {
-  const fetcher = async (key: string, { arg }: { arg: IndicatorModel[] }) => {
-    const url = key.replace(":id", id) + "/indicator" + "/";
+  const fetcher = async (key: CacheKey, { arg }: { arg: IndicatorModel[] }) => {
+    const url = key.path + "/indicator";
     const res = await fetch(url, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -16,7 +16,7 @@ export const useUpdateIndicators = (id: string) => {
     return res.text();
   };
 
-  const { trigger, isMutating } = useSWRMutation(ONE_QUANTITATIVE, fetcher);
+  const { trigger, isMutating } = useSWRMutation(key, fetcher);
   return {
     updateTrigger: trigger,
     isUpdating: isMutating,

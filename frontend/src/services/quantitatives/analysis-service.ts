@@ -1,19 +1,18 @@
 import useSWRMutation from "swr/mutation";
-import { BASE_URL } from "../../utils/api";
 import { AnalysisModel } from "../../models/quantitative-model";
-
-const ONE_QUANTITATIVE = `${BASE_URL}/quantitative/:id`;
+import API, { CacheKey } from "../../utils/api";
 
 export const useRunAnalysis = (
-  quantitative_id: string,
-  analysis_id: string
+  quantitative_id: number,
+  analysis_id: number
 ) => {
+  const key = { id: quantitative_id, path: API.QUANTITATIVE };
+
   const fetcher = async (
-    key: string,
+    key: CacheKey,
     { arg }: { arg: Partial<AnalysisModel> }
   ) => {
-    const url =
-      key.replace(":id", quantitative_id) + "/analysis" + "/" + analysis_id;
+    const url = key.path + "/analysis" + "/" + analysis_id.toString();
     const res = await fetch(url, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -26,16 +25,18 @@ export const useRunAnalysis = (
     return res.text();
   };
 
-  const { trigger, isMutating } = useSWRMutation(ONE_QUANTITATIVE, fetcher);
+  const { trigger, isMutating } = useSWRMutation(key, fetcher);
   return {
     runTrigger: trigger,
     isRunning: isMutating,
   };
 };
 
-export const usePostAnalyses = (quantitative_id: string) => {
-  const fetcher = async (key: string, { arg }: { arg: AnalysisModel[] }) => {
-    const url = key.replace(":id", quantitative_id) + "/analysis";
+export const usePostAnalyses = (quantitative_id: number) => {
+  const key = { id: quantitative_id, path: API.QUANTITATIVE };
+
+  const fetcher = async (key: CacheKey, { arg }: { arg: AnalysisModel[] }) => {
+    const url = key.path + "/analysis";
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -47,7 +48,7 @@ export const usePostAnalyses = (quantitative_id: string) => {
     return res.text();
   };
 
-  const { trigger, isMutating } = useSWRMutation(ONE_QUANTITATIVE, fetcher);
+  const { trigger, isMutating } = useSWRMutation(key, fetcher);
   return {
     postTrigger: trigger,
     isPosting: isMutating,
@@ -55,15 +56,16 @@ export const usePostAnalyses = (quantitative_id: string) => {
 };
 
 export const useUpdateAnalysis = (
-  quantitative_id: string,
-  analysis_id: string
+  quantitative_id: number,
+  analysis_id: number
 ) => {
+  const key = { id: quantitative_id, path: API.QUANTITATIVE };
+
   const fetcher = async (
-    key: string,
+    key: CacheKey,
     { arg }: { arg: Partial<AnalysisModel> }
   ) => {
-    const url =
-      key.replace(":id", quantitative_id) + "/analysis" + "/" + analysis_id;
+    const url = key.path + "/analysis" + "/" + analysis_id.toString();
     const res = await fetch(url, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -76,7 +78,7 @@ export const useUpdateAnalysis = (
     return res.text();
   };
 
-  const { trigger, isMutating } = useSWRMutation(ONE_QUANTITATIVE, fetcher);
+  const { trigger, isMutating } = useSWRMutation(key, fetcher);
   return {
     updateTrigger: trigger,
     isUpdating: isMutating,
@@ -84,18 +86,19 @@ export const useUpdateAnalysis = (
 };
 
 export const useDeleteAnalysis = (
-  quantitative_id: string,
-  analysis_id: string
+  quantitative_id: number,
+  analysis_id: number
 ) => {
-  const fetcher = async (key: string) => {
-    const url =
-      key.replace(":id", quantitative_id) + "/analysis" + "/" + analysis_id;
+  const key = { id: quantitative_id, path: API.QUANTITATIVE };
+
+  const fetcher = async (key: CacheKey) => {
+    const url = key.path + "/analysis" + "/" + analysis_id.toString();
     const res = await fetch(url, { method: "DELETE" });
     if (!res.ok) throw new Error("Error while deleting the analysis.");
     return res.text();
   };
 
-  const { trigger, isMutating } = useSWRMutation(ONE_QUANTITATIVE, fetcher);
+  const { trigger, isMutating } = useSWRMutation(key, fetcher);
   return {
     deleteTrigger: trigger,
     isDeleting: isMutating,
